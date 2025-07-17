@@ -13,23 +13,23 @@ if(NOT libzip_VERSION_PATCH)
   set(libzip_VERSION_PATCH 0)
 endif()
 
-option(ENABLE_COMMONCRYPTO "Enable use of CommonCrypto" ON)
-option(ENABLE_GNUTLS "Enable use of GnuTLS" ON)
-option(ENABLE_MBEDTLS "Enable use of mbed TLS" ON)
-option(ENABLE_OPENSSL "Enable use of OpenSSL" ON)
-option(ENABLE_WINDOWS_CRYPTO "Enable use of Windows cryptography libraries" ON)
+option(ENABLE_COMMONCRYPTO "Enable use of CommonCrypto" OFF)
+option(ENABLE_GNUTLS "Enable use of GnuTLS" OFF)
+option(ENABLE_MBEDTLS "Enable use of mbed TLS" OFF)
+option(ENABLE_OPENSSL "Enable use of OpenSSL" OFF)
+option(ENABLE_WINDOWS_CRYPTO "Enable use of Windows cryptography libraries" OFF)
 
-option(ENABLE_BZIP2 "Enable use of BZip2" ON)
-option(ENABLE_LZMA "Enable use of LZMA" ON)
-option(ENABLE_ZSTD "Enable use of Zstandard" ON)
+option(ENABLE_BZIP2 "Enable use of BZip2" OFF)
+option(ENABLE_LZMA "Enable use of LZMA" OFF)
+option(ENABLE_ZSTD "Enable use of Zstandard" OFF)
 
 option(ENABLE_FDOPEN "Enable zip_fdopen, which is not allowed in Microsoft CRT secure libraries" ON)
 
-option(BUILD_TOOLS "Build tools in the src directory (zipcmp, zipmerge, ziptool)" ON)
-option(BUILD_REGRESS "Build regression tests" ON)
-option(BUILD_OSSFUZZ "Build fuzzers for ossfuzz" ON)
-option(BUILD_EXAMPLES "Build examples" ON)
-option(BUILD_DOC "Build documentation" ON)
+option(BUILD_TOOLS "Build tools in the src directory (zipcmp, zipmerge, ziptool)" OFF)
+option(BUILD_REGRESS "Build regression tests" OFF)
+option(BUILD_OSSFUZZ "Build fuzzers for ossfuzz" OFF)
+option(BUILD_EXAMPLES "Build examples" OFF)
+option(BUILD_DOC "Build documentation" OFF)
 
 include(CheckFunctionExists)
 include(CheckIncludeFiles)
@@ -195,35 +195,38 @@ int main(int argc, char *argv[]) { unsigned long x = FICLONERANGE; }" HAVE_FICLO
 
 test_big_endian(WORDS_BIGENDIAN)
 
-find_package(ZLIB 1.1.2 REQUIRED)
+find_package(ZLIB 1.1.2 QUIET)
+if(NOT ZLIB_FOUND)
+  include(zlib)
+endif()
 # so developers on systems where zlib is named differently (Windows, sometimes)
 # can override the name used in the pkg-config file
-if (NOT ZLIB_LINK_LIBRARY_NAME)
-  set(ZLIB_LINK_LIBRARY_NAME "z")
-
-  # Get the correct name in common cases
-  list(LENGTH ZLIB_LIBRARIES N_ZLIB_LIBRARIES)
-  if(N_ZLIB_LIBRARIES EQUAL 1)
-    set(ZLIB_FILENAME ${ZLIB_LIBRARIES})
-  elseif(N_ZLIB_LIBRARIES EQUAL 4)
-    # ZLIB_LIBRARIES might have the target_link_library() format like
-    # "optimized;path/to/zlib.lib;debug;path/to/zlibd.lib". Use the 'optimized'
-    # case unless we know we are in a Debug build.
-    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-      list(FIND ZLIB_LIBRARIES "debug" ZLIB_LIBRARIES_INDEX_OF_CONFIG)
-    else()
-      list(FIND ZLIB_LIBRARIES "optimized" ZLIB_LIBRARIES_INDEX_OF_CONFIG)
-    endif()
-    if(ZLIB_LIBRARIES_INDEX_OF_CONFIG GREATER_EQUAL 0)
-      math(EXPR ZLIB_FILENAME_INDEX "${ZLIB_LIBRARIES_INDEX_OF_CONFIG}+1")
-      list(GET ZLIB_LIBRARIES ${ZLIB_FILENAME_INDEX} ZLIB_FILENAME)
-    endif()
-  endif()
-  if(ZLIB_FILENAME)
-    get_filename_component(ZLIB_FILENAME ${ZLIB_FILENAME} NAME_WE)
-    string(REGEX REPLACE "^lib" "" ZLIB_LINK_LIBRARY_NAME ${ZLIB_FILENAME})
-  endif()
-endif(NOT ZLIB_LINK_LIBRARY_NAME)
+#if (NOT ZLIB_LINK_LIBRARY_NAME)
+#  set(ZLIB_LINK_LIBRARY_NAME "z")
+#
+#  # Get the correct name in common cases
+#  list(LENGTH ZLIB_LIBRARIES N_ZLIB_LIBRARIES)
+#  if(N_ZLIB_LIBRARIES EQUAL 1)
+#    set(ZLIB_FILENAME ${ZLIB_LIBRARIES})
+#  elseif(N_ZLIB_LIBRARIES EQUAL 4)
+#    # ZLIB_LIBRARIES might have the target_link_library() format like
+#    # "optimized;path/to/zlib.lib;debug;path/to/zlibd.lib". Use the 'optimized'
+#    # case unless we know we are in a Debug build.
+#    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+#      list(FIND ZLIB_LIBRARIES "debug" ZLIB_LIBRARIES_INDEX_OF_CONFIG)
+#    else()
+#      list(FIND ZLIB_LIBRARIES "optimized" ZLIB_LIBRARIES_INDEX_OF_CONFIG)
+#    endif()
+#    if(ZLIB_LIBRARIES_INDEX_OF_CONFIG GREATER_EQUAL 0)
+#      math(EXPR ZLIB_FILENAME_INDEX "${ZLIB_LIBRARIES_INDEX_OF_CONFIG}+1")
+#      list(GET ZLIB_LIBRARIES ${ZLIB_FILENAME_INDEX} ZLIB_FILENAME)
+#    endif()
+#  endif()
+#  if(ZLIB_FILENAME)
+#    get_filename_component(ZLIB_FILENAME ${ZLIB_FILENAME} NAME_WE)
+#    string(REGEX REPLACE "^lib" "" ZLIB_LINK_LIBRARY_NAME ${ZLIB_FILENAME})
+#  endif()
+#endif(NOT ZLIB_LINK_LIBRARY_NAME)
 
 if(ENABLE_BZIP2)
   find_package(BZip2)
