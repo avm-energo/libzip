@@ -23,8 +23,6 @@ include(TestBigEndian)
 include(GNUInstallDirs)
 
 option(BUILD_SHARED_LIBS "Build shared libraries" ON)
-option(LIBZIP_DO_INSTALL "Install libzip and the related files" ON)
-option(SHARED_LIB_VERSIONNING "Add SO version in .so build" ON)
 
 if(BUILD_SHARED_LIBS)
   set(HAVE_SHARED TRUE)
@@ -146,7 +144,63 @@ endif(MSVC)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Targets
-ADD_SUBDIRECTORY(lib)
+include(CheckFunctionExists)
+
+set(CMAKE_C_VISIBILITY_PRESET hidden)
+
+file(GLOB_RECURSE files_h   *.h)
+file(GLOB_RECURSE files_cpp *.cpp)
+
+
+# create zip_err_str.c from zip.h and zipint.h
+add_custom_command(
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/zip_err_str.c
+  COMMAND "${CMAKE_COMMAND}"
+    "-DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+    "-DCMAKE_CURRENT_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR}"
+    "-P" "${PROJECT_SOURCE_DIR}/cmake/GenerateZipErrorStrings.cmake"
+  DEPENDS
+    ${PROJECT_SOURCE_DIR}/cmake/GenerateZipErrorStrings.cmake
+    ${PROJECT_SOURCE_DIR}/zip.h
+    ${PROJECT_SOURCE_DIR}/zipint.h
+  COMMENT "Generating zip_err_str.c"
+)
+
+add_library(${PROJECT_NAME}
+  ${files_cpp}
+  ${CMAKE_CURRENT_BINARY_DIR}/zip_err_str.c)
+
+add_library(avm-energo::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+
+if(WIN32)
+  target_compile_definitions(${PROJECT_NAME} PRIVATE WIN32_LEAN_AND_MEAN)
+  target_sources(${PROJECT_NAME} PRIVATE
+    zip_source_file_win32.c
+    zip_source_file_win32_named.c
+    zip_source_file_win32_utf16.c
+    zip_source_file_win32_utf8.c
+    )
+  if(CMAKE_SYSTEM_NAME MATCHES WindowsPhone OR CMAKE_SYSTEM_NAME MATCHES WindowsStore)
+    target_sources(${PROJECT_NAME} PRIVATE zip_random_uwp.c)
+  else()
+    target_sources(${PROJECT_NAME} PRIVATE zip_source_file_win32_ansi.c zip_random_win32.c)
+    target_link_libraries(${PROJECT_NAME} PRIVATE advapi32)
+  endif()
+else(WIN32)
+  target_sources(${PROJECT_NAME} PRIVATE
+    zip_source_file_stdio_named.c
+    zip_random_unix.c
+    )
+endif(WIN32)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE avm-zlib)
+
+target_include_directories(${PROJECT_NAME}
+  PUBLIC
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
+  $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+  )
 
 # fixed size integral types
 
@@ -237,17 +291,29 @@ endif()
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${PROJECT_BINARY_DIR}/config.h)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/zipconf.h.in ${PROJECT_BINARY_DIR}/zipconf.h)
 
+install(TARGETS ${PROJECT_NAME}
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+install(TARGETS ${PROJECT_NAME}
+  EXPORT ${PROJECT_NAME}-targets
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
+install(FILES zip.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
 # create package config file
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file("${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake"
   COMPATIBILITY AnyNewerVersion)
 
 configure_package_config_file("${PROJECT_NAME}-config.cmake.in" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
-  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/libzip)
-
-# Add targets to the build-tree export set
-export(TARGETS zip
-  FILE "${PROJECT_BINARY_DIR}/${PROJECT_NAME}-targets.cmake")
+  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
 
 # installation
 install(FILES ${PROJECT_BINARY_DIR}/zipconf.h DESTINATION include)
@@ -257,3 +323,7 @@ install(FILES ${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config.cmake ${PROJECT_BINAR
 install(EXPORT ${PROJECT_NAME}-targets NAMESPACE ${PROJECT_NAME}:: FILE ${PROJECT_NAME}-targets.cmake
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
   )
+
+set(VERSION_IN ${CMAKE_CURRENT_SOURCE_DIR}/VERSION.in)
+set(VERSION_OUT ${CMAKE_CURRENT_SOURCE_DIR}/package/src/VERSION)
+configure_file(${VERSION_IN} ${VERSION_OUT} @ONLY)

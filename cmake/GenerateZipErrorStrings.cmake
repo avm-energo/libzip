@@ -1,7 +1,7 @@
 # create zip_err_str.c from zip.h and zipint.h
-file(READ ${PROJECT_SOURCE_DIR}/lib/zip.h zip_h)
+file(READ ${PROJECT_SOURCE_DIR}/zip.h zip_h)
 string(REGEX MATCHALL "#define ZIP_ER_([A-Z0-9_]+) ([0-9]+)[ \t]+/([-*0-9a-zA-Z, ']*)/" zip_h_err ${zip_h})
-file(READ ${PROJECT_SOURCE_DIR}/lib/zipint.h zipint_h)
+file(READ ${PROJECT_SOURCE_DIR}/zipint.h zipint_h)
 string(REGEX MATCHALL "#define ZIP_ER_DETAIL_([A-Z0-9_]+) ([0-9]+)[ \t]+/([-*0-9a-zA-Z, ']*)/" zipint_h_err ${zipint_h})
 set(zip_err_str [=[
 /*
