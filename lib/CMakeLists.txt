@@ -139,47 +139,13 @@ else(WIN32)
     )
 endif(WIN32)
 
-if(HAVE_LIBBZ2)
-  target_sources(zip PRIVATE zip_algorithm_bzip2.c)
-  target_link_libraries(zip PRIVATE BZip2::BZip2)
-endif()
-
-if(HAVE_LIBLZMA)
-  target_sources(zip PRIVATE zip_algorithm_xz.c)
-  target_link_libraries(zip PRIVATE LibLZMA::LibLZMA)
-endif()
-
-if(HAVE_LIBZSTD)
-  target_sources(zip PRIVATE zip_algorithm_zstd.c)
-  target_link_libraries(zip PRIVATE ${zstd_TARGET})
-endif()
-
-if(HAVE_COMMONCRYPTO)
-  target_sources(zip PRIVATE zip_crypto_commoncrypto.c)
-elseif(HAVE_WINDOWS_CRYPTO)
-  target_sources(zip PRIVATE zip_crypto_win.c)
-  target_link_libraries(zip PRIVATE bcrypt)
-elseif(HAVE_GNUTLS)
-  target_sources(zip PRIVATE zip_crypto_gnutls.c)
-  target_link_libraries(zip PRIVATE GnuTLS::GnuTLS Nettle::Nettle)
-elseif(HAVE_OPENSSL)
-  target_sources(zip PRIVATE zip_crypto_openssl.c)
-  target_link_libraries(zip PRIVATE OpenSSL::Crypto)
-elseif(HAVE_MBEDTLS)
-  target_sources(zip PRIVATE zip_crypto_mbedtls.c)
-  target_link_libraries(zip PRIVATE MbedTLS::mbedcrypto)
-endif()
-
-if(HAVE_CRYPTO)
-  target_sources(zip PRIVATE zip_winzip_aes.c zip_source_winzip_aes_decode.c zip_source_winzip_aes_encode.c)
-endif()
-
 if(SHARED_LIB_VERSIONNING)
   # MACHO_*_VERSION can be removed when SOVERSION gets increased. Cf #405
   set_target_properties(zip PROPERTIES VERSION 5.5 SOVERSION 5 MACHO_CURRENT_VERSION 6.5 MACHO_COMPATIBILITY_VERSION 6)
 endif()
 
-target_link_libraries(zip PRIVATE ZLIB::ZLIB)
+target_link_libraries(zip PUBLIC avm-zlib)
+
 target_include_directories(zip
   PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/lib>
@@ -187,15 +153,15 @@ target_include_directories(zip
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
   )
 
-if(LIBZIP_DO_INSTALL)
-  install(TARGETS zip
-    EXPORT ${PROJECT_NAME}-targets
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
-  install(FILES zip.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-endif()
+target_include_directories(zip PRIVATE ${avm-zlib_SOURCE_DIR})
+
+install(TARGETS zip
+  EXPORT ${PROJECT_NAME}-targets
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(FILES zip.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 # create zip_err_str.c from zip.h and zipint.h
 add_custom_command(
