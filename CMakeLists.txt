@@ -98,7 +98,7 @@ endif()
 
 check_include_files(stdbool.h HAVE_STDBOOL_H)
 check_include_files(strings.h HAVE_STRINGS_H)
-check_include_files(unistd.h HAVE_UNISTD_H)
+check_include_files(unistd.h Z_HAVE_UNISTD_H)
 
 check_include_files(inttypes.h HAVE_INTTYPES_H_LIBZIP)
 check_include_files(stdint.h HAVE_STDINT_H_LIBZIP)

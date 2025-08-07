@@ -39,7 +39,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#ifdef HAVE_UNISTD_H
+#ifdef Z_HAVE_UNISTD_H
 #include <unistd.h>
 #endif
 #ifdef _WIN32
