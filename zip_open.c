@@ -374,7 +374,7 @@ static bool _zip_read_cdir(zip_t *za, zip_buffer_t *buffer, zip_uint64_t buf_off
                 return true;
             }
             if (tail_len < comment_len) {
-                comment_len = tail_len;
+                comment_len = (zip_uint16_t) tail_len;
             }
         }
 
