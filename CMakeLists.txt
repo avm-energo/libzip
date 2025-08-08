@@ -299,7 +299,7 @@ else(WIN32)
     )
 endif(WIN32)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE avm-zlib)
+target_link_libraries(${PROJECT_NAME} PUBLIC avm-zlib)
 
 target_include_directories(${PROJECT_NAME}
   PUBLIC
