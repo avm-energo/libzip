@@ -34,7 +34,7 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <zlib.h>
+#include <avm-zlib.h>
 
 #include "zipint.h"
 

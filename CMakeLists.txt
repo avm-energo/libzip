@@ -133,7 +133,13 @@ int main(int argc, char *argv[]) { unsigned long x = FICLONERANGE; }" HAVE_FICLO
 
 test_big_endian(WORDS_BIGENDIAN)
 
-include(zlib)
+# include(zlib)
+find_package(avm-zlib QUIET)
+if(${avm-zlib_FOUND})
+  message(STATUS "Found package avm-zlib")
+else()
+  include(zlib)
+endif()
 
 if(MSVC)
   add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
@@ -398,15 +404,15 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${PROJECT_BINARY_DIR}/con
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/zipconf.h.in ${PROJECT_BINARY_DIR}/zipconf.h)
 
 set(public_headers
-  ${CMAKE_CURRENT_SOURCE_DIR}/zip.h
   ${PROJECT_BINARY_DIR}/zipconf.h
   ${PROJECT_BINARY_DIR}/config.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/zip.h
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
   VERSION ${PROJECT_VERSION}
   SOVERSION ${PROJECT_VERSION_MAJOR}
-  PUBLIC_HEADER ${public_headers}
+  PUBLIC_HEADER "${public_headers}"
 )
 
 set(PROJECT_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
@@ -439,12 +445,12 @@ configure_package_config_file(
 # install(FILES ${PROJECT_BINARY_DIR}/zipconf.h DESTINATION include)
 install(FILES ${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
   ${PROJECT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
-  DESTINATION ${PROJECT_INSTALL_CMAKEDIR}}
+  DESTINATION ${PROJECT_INSTALL_CMAKEDIR}
   )
 
 install(EXPORT ${PROJECT_NAME}_Targets
   NAMESPACE ${PROJECT_NAME}::
-  FILE ${PROJECT_NAME}_Targets.cmake
+  FILE ${PROJECT_NAME}Targets.cmake
   DESTINATION ${PROJECT_INSTALL_CMAKEDIR}
   )
 

@@ -35,7 +35,7 @@
 
 #include <limits.h>
 #include <stdlib.h>
-#include <zlib.h>
+#include <avm-zlib.h>
 
 struct ctx {
     zip_error_t *error;

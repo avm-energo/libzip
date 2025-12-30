@@ -11,7 +11,7 @@ if (NOT IS_SHARED)
 endif()
 
 # Provide all our library targets to users.
-include("${CMAKE_CURRENT_LIST_DIR}/libzip-targets.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@Targets.cmake")
 
-check_required_components(libzip)
+check_required_components("@PROJECT_NAME@")
 

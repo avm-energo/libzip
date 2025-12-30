@@ -33,7 +33,7 @@
 
 
 #include <stdlib.h>
-#include <zlib.h>
+#include <avm-zlib.h>
 
 #include "zipint.h"
 
