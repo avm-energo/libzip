@@ -22,8 +22,6 @@ include(CheckStructHasMember)
 include(TestBigEndian)
 include(GNUInstallDirs)
 
-option(BUILD_SHARED_LIBS "Build shared libraries" ON)
-
 if(BUILD_SHARED_LIBS)
   set(HAVE_SHARED TRUE)
 else()
