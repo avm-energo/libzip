@@ -1,0 +1,9 @@
+Source: libavm-libzip
+Priority: optional
+Maintainer: AVM-Energo <support@avmenergo.ru>
+Section: devel
+
+Package: libavm-libzip
+Description: LibZip for AVM-Energo projects
+Architecture: amd64
+Depends: ${shlibs:Depends}

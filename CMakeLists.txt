@@ -6,7 +6,7 @@ if (${CMAKE_VERSION} VERSION_LESS "3.17.0")
 endif()
 
 project(avm-libzip
-  VERSION 1.11.4
+  VERSION 1.11.5
   LANGUAGES C)
 
 option(ENABLE_FDOPEN "Enable zip_fdopen, which is not allowed in Microsoft CRT secure libraries" ON)
@@ -132,7 +132,7 @@ int main(int argc, char *argv[]) { unsigned long x = FICLONERANGE; }" HAVE_FICLO
 test_big_endian(WORDS_BIGENDIAN)
 
 # include(zlib)
-find_package(avm-zlib QUIET)
+find_package(avm-zlib 2.0.0 QUIET)
 if(${avm-zlib_FOUND})
   message(STATUS "Found package avm-zlib")
 else()
