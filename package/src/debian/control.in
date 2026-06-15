@@ -6,4 +6,4 @@ Section: devel
 Package: libavm-libzip
 Description: LibZip for AVM-Energo projects
 Architecture: amd64
-Depends: ${shlibs:Depends}
+Depends: ${shlibs:Depends}, libavm-zlib (>= 2.0.0)
